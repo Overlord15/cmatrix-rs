@@ -1,7 +1,5 @@
 <div align="center">
-<p align="center">
-  <img src="asset/icon.png" alt="Alt Text" height="128" />
-</p>
+<img width="128" height="128" alt="icon" src="https://github.com/user-attachments/assets/7d5c0438-859d-4b55-822a-dcd5290941b3" />
 </div>
 
 # cmatrix (Rust port for Windows)

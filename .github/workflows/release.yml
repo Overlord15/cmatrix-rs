@@ -1,0 +1,48 @@
+name: Build and Release
+
+# Runs only when a new commit is pushed to the main branch.
+on:
+  push:
+    branches: [main, master]
+
+permissions:
+  contents: write   # needed to create the release
+
+jobs:
+  build-release:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build (release)
+        shell: pwsh
+        run: cargo build --release --locked
+
+      - name: Package
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path dist | Out-Null
+          Copy-Item target\release\cmatrix.exe dist\cmatrix.exe
+          (Get-FileHash dist\cmatrix.exe -Algorithm SHA256).Hash.ToLower() + "  cmatrix.exe" | Out-File -Encoding ascii dist\cmatrix.exe.sha256
+
+      - name: Write release notes from the commit message
+        shell: pwsh
+        run: |
+          # Read the message with git (not from workflow expressions) so
+          # special characters in it can never break or inject into the script.
+          git log -1 --pretty=%s > title.txt
+          git log -1 --pretty=%B > notes.txt
+
+      - name: Create GitHub release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          $version = (Select-String -Path Cargo.toml -Pattern '^version\s*=\s*"(.+)"').Matches[0].Groups[1].Value
+          $tag = "v$version-build.${{ github.run_number }}"
+          $title = (Get-Content title.txt -Raw).Trim()
+          gh release create $tag dist\cmatrix.exe dist\cmatrix.exe.sha256 `
+            --target ${{ github.sha }} `
+            --title "$title" `
+            --notes-file notes.txt

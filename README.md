@@ -1,3 +1,9 @@
+<div align="center">
+<p align="center">
+  <img src="asset/icon.png" alt="Alt Text" height="128" />
+</p>
+</div>
+
 # cmatrix (Rust port for Windows)
 
 A Rust rewrite of [cmatrix 2.0](https://github.com/abishekvashok/cmatrix) for the
